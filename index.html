@@ -29,6 +29,7 @@ body { margin: 0; background: var(--site-background); color: var(--site-on-backg
 .cursor-dot { width:7px; height:7px; background:var(--site-primary); }
 .cursor-ring { width:38px; height:38px; border:1px solid rgba(213,255,0,.8); transition:width .25s ease,height .25s ease,background .25s ease; }
 body.cursor-ready .cursor-dot,body.cursor-ready .cursor-ring { opacity:1; }
+body.cursor-out .cursor-dot,body.cursor-out .cursor-ring { opacity:0; }
 body.cursor-hover .cursor-ring { width:68px; height:68px; background:rgba(213,255,0,.12); }
 body:before { content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.13; background-image:radial-gradient(rgba(242,243,235,.35) .55px,transparent .55px); background-size:5px 5px; mask-image:linear-gradient(to bottom,black,transparent 75%); }
 #app>* { position:relative; }
@@ -240,6 +241,13 @@ const moveRing = () => {
   cursorRing.style.top = ringY + 'px';
   requestAnimationFrame(moveRing);
 };
+window.addEventListener('pointerenter', () => {
+  document.body.classList.remove('cursor-out');
+});
+window.addEventListener('pointerleave', () => {
+  document.body.classList.add('cursor-out');
+  document.body.classList.remove('cursor-hover');
+});
 window.addEventListener('pointermove', event => {
   if (event.pointerType === 'touch') return;
   pointerX = event.clientX;
