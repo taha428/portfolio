@@ -23,16 +23,16 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--site-background); color: var(--site-on-background); font-family: var(--site-font-body); }
-#app { min-height: 100vh; width: 100%; background-color: var(--site-background); color: var(--site-on-background); border-radius: 0; overflow: hidden; position: relative; }
+#app { min-height: 100vh; width: 100%; background-color: var(--site-background); color: var(--site-on-background); border-radius: 0; overflow: visible; position: relative; }
 .scroll-progress { position:fixed; z-index:20; top:0; left:0; height:3px; width:0; background:var(--site-primary); box-shadow:0 0 14px var(--site-primary); }
-.cursor-dot,.cursor-ring { position:fixed; z-index:30; top:0; left:0; pointer-events:none; border-radius:50%; opacity:0; transform:translate(-50%,-50%); }
+.cursor-dot,.cursor-ring { position:fixed; z-index:99999; top:0; left:0; pointer-events:none; border-radius:50%; opacity:0; transform:translate(-50%,-50%); }
 .cursor-dot { width:7px; height:7px; background:var(--site-primary); }
 .cursor-ring { width:38px; height:38px; border:1px solid rgba(213,255,0,.8); transition:width .25s ease,height .25s ease,background .25s ease; }
 body.cursor-ready .cursor-dot,body.cursor-ready .cursor-ring { opacity:1; }
 body.cursor-hover .cursor-ring { width:68px; height:68px; background:rgba(213,255,0,.12); }
 body:before { content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.13; background-image:radial-gradient(rgba(242,243,235,.35) .55px,transparent .55px); background-size:5px 5px; mask-image:linear-gradient(to bottom,black,transparent 75%); }
 #app>* { position:relative; }
-@media (pointer:fine) { body,a,button { cursor:none; } }
+@media (pointer:fine) { body.cursor-ready,body.cursor-ready * { cursor:none !important; } }
 .site-wrap { width: min(1240px, calc(100% - 64px)); margin: 0 auto; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; }
@@ -198,7 +198,7 @@ h2 { font-family:var(--site-font-heading); text-transform:uppercase; font-size:c
       </div>
       <div class="hero-art" aria-label="Abstract TB monogram artwork"><div class="art-orbit"></div><div class="art-core">TB.</div><div class="art-note">Visual thinking / 2026</div></div>
     </section>
-    <div class="marquee" aria-hidden="true"><div class="marquee-track">DESIGN WITH INTENT <span>✳</span> BUILD WITH PURPOSE <span>✳</span> MAKE IT MEMORABLE <span>✳</span> DESIGN WITH INTENT <span>✳</span> BUILD WITH PURPOSE <span>✳</span> MAKE IT MEMORABLE <span>✳</span></div></div>
+    <div class="marquee" aria-hidden="true"><div class="marquee-track">DESIGN WITH INTENT <span>✳</span> BUILD WITH PURPOSE <span>✳</span> MAKE IT MEMORABLE <span>✳</span> DESIGN WITH INTENT <span>✳</span> BUILD WITH PURPOSE <span>✳</span> MAKE IT MEMORABLE <span>✳</span><span aria-hidden="true"> DESIGN WITH INTENT ✳ BUILD WITH PURPOSE ✳ MAKE IT MEMORABLE ✳ DESIGN WITH INTENT ✳ BUILD WITH PURPOSE ✳ MAKE IT MEMORABLE ✳</span></div></div>
     <section class="site-wrap section" id="work">
       <div class="section-head reveal"><div><div class="kicker">01 / Selected work</div><h2>Some things<br>I've made.</h2></div><p class="section-intro">A selection of visual directions across graphic design, branding, social media, and digital experiences.</p></div>
       <div class="filters reveal" role="group" aria-label="Filter projects"><button class="filter active" data-filter="all">All work</button><button class="filter" data-filter="design">Graphic design</button><button class="filter" data-filter="brand">Branding</button><button class="filter" data-filter="digital">Digital</button></div>
@@ -230,13 +230,14 @@ const heroArt = document.querySelector('.hero-art');
 const artCore = document.querySelector('.art-core');
 if (window.matchMedia('(pointer:fine)').matches) {
   document.body.classList.add('cursor-ready');
-  let pointerX = 0, pointerY = 0, ringX = 0, ringY = 0;
-  window.addEventListener('pointermove', event => { pointerX = event.clientX; pointerY = event.clientY; cursorDot.style.left = pointerX + 'px'; cursorDot.style.top = pointerY + 'px'; });
-  const moveRing = () => { ringX += (pointerX-ringX)*.16; ringY += (pointerY-ringY)*.16; cursorRing.style.left = ringX + 'px'; cursorRing.style.top = ringY + 'px'; requestAnimationFrame(moveRing); };
+  let pointerX = window.innerWidth / 2, pointerY = window.innerHeight / 2, ringX = pointerX, ringY = pointerY;
+  window.addEventListener('pointermove', event => { pointerX = event.clientX; pointerY = event.clientY; cursorDot.style.left = pointerX + 'px'; cursorDot.style.top = pointerY + 'px'; }, { passive:true });
+  const moveRing = () => { ringX += (pointerX-ringX)*.2; ringY += (pointerY-ringY)*.2; cursorRing.style.left = ringX + 'px'; cursorRing.style.top = ringY + 'px'; requestAnimationFrame(moveRing); };
   moveRing();
+  document.addEventListener('pointerover', event => { if (event.target.closest('a,button,.project')) document.body.classList.add('cursor-hover'); });
+  document.addEventListener('pointerout', event => { if (!event.relatedTarget || !event.relatedTarget.closest || !event.relatedTarget.closest('a,button,.project')) document.body.classList.remove('cursor-hover'); });
   heroArt.addEventListener('pointermove', event => { const rect = heroArt.getBoundingClientRect(); const x = (event.clientX-rect.left)/rect.width-.5; const y = (event.clientY-rect.top)/rect.height-.5; artCore.style.transform = `translate3d(${x*18}px,${y*14}px,24px) rotate(${x*9}deg)`; });
   heroArt.addEventListener('pointerleave', () => { artCore.style.transform = ''; });
-  document.querySelectorAll('a,button,.project').forEach(item => { item.addEventListener('pointerenter', () => document.body.classList.add('cursor-hover')); item.addEventListener('pointerleave', () => document.body.classList.remove('cursor-hover')); });
 }
 window.addEventListener('scroll', () => { const max = document.documentElement.scrollHeight - window.innerHeight; progress.style.width = (max > 0 ? window.scrollY / max * 100 : 0) + '%'; }, { passive:true });
 menuToggle.addEventListener('click', () => {
